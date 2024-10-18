@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stay Online Challenge</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 100px; }
+        .disabled { background-color: gray; color: white; }
+        button { padding: 20px; font-size: 20px; }
+        .debt { margin-top: 20px; font-size: 24px; color: red; }
+    </style>
+</head>
+<body>
+
+    <h1>Stay Online Challenge</h1>
+    <h2>Click the button between intervals</h2>
+    <button id="loginButton" class="disabled" disabled>Log In</button>
+    <div id="status" class="debt"></div>
+    
+    <script>
+        let debt = 0;
+        let lastClickTime = null;
+
+        // Update the status message and debt
+        function updateDebt() {
+            document.getElementById('status').textContent = 'Your Debt: £' + debt;
+        }
+
+        // Check if the button should be enabled based on the time
+        function checkTimeForButton() {
+            const now = new Date();
+            const currentMinutes = now.getMinutes();
+            const currentHours = now.getHours();
+
+            // Calculate the next valid log-in time: 9.30am to 11.00pm (i.e., 23:00)
+            const validStartTime = new Date();
+            validStartTime.setHours(9, 25, 0, 0); // Start at 9:25am
+            const validEndTime = new Date();
+            validEndTime.setHours(23, 0, 0, 0);  // End at 11:00pm
+
+            if (now < validStartTime || now > validEndTime) {
+                disableButton();
+                return;
+            }
+
+            // Button is enabled every 30 minutes in a 10-minute window
+            const isClickWindow = ((currentMinutes % 30) >= 25) || (currentMinutes % 30 <= 5);
+
+            if (isClickWindow) {
+                enableButton();
+            } else {
+                disableButton();
+            }
+
+            // If the last button click was outside the current window, add to the debt
+            if (lastClickTime) {
+                const lastClickDiff = (now - lastClickTime) / 1000 / 60; // Difference in minutes
+                if (lastClickDiff > 30) {
+                    debt += 10;
+                    updateDebt();
+                }
+            }
+        }
+
+        // Enable the button for logging in
+        function enableButton() {
+            const button = document.getElementById('loginButton');
+            button.disabled = false;
+            button.classList.remove('disabled');
+            button.textContent = 'Log In Now';
+        }
+
+        // Disable the button if outside the valid time window
+        function disableButton() {
+            const button = document.getElementById('loginButton');
+            button.disabled = true;
+            button.classList.add('disabled');
+            button.textContent = 'Log In Disabled';
+        }
+
+        // Handle the button click event
+        document.getElementById('loginButton').addEventListener('click', function() {
+            const now = new Date();
+            lastClickTime = now;
+            alert('Logged in at ' + now.toLocaleTimeString());
+        });
+
+        // Check the time every second
+        setInterval(checkTimeForButton, 1000);
+        updateDebt(); // Initialize debt display
+    </script>
+
+</body>
+</html>
